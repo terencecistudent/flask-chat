@@ -1,22 +1,37 @@
 import os
-from flask import Flask, redirect
+
+# Are built in python modules
+from datetime import datetime
+from flask import Flask, redirect, render_template, request, session
 
 app = Flask(__name__)
+app.secret_key = "randomstring123"
 messages = []
 
 def add_messages(username, message):
-    ''' Add messages to messages list '''
-    messages.append("{}: {}".format(username, message))
+    """ Add messages to messages list """
+    # var is now
+    # strftime() method takes a date/time object and 
+    # then converts that to a string according to a given format.
+    now = datetime.now().strftime("%H:%M:%S")
+    messages.append("({}) {}: {}".format(now, username, message))
 
 
 def get_all_messages():
     ''' Get all of the messages and separate them with a br '''
     return "<br>".join(messages)
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
     """Main page with instructions"""
-    return "To send a message use: /USERNAME/MESSAGE"
+
+    if request.method == "POST":
+        session["username"] = request.form["username"]
+    
+    if "username" in session:
+        return redirect(session["username"])
+
+    return render_template("index.html")
 
 
 @app.route("/<username>")
